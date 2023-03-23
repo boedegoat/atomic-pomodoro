@@ -1,0 +1,12 @@
+appId: com.example.atomic-pomodoro
+productName: Atomic Pomodoro
+copyright: Copyright © 2023 Bhremada Fevreano
+directories:
+    output: dist
+    buildResources: resources
+files:
+    - from: .
+      filter:
+          - package.json
+          - app
+publish: null
