@@ -1,38 +1,7 @@
-<p align="center"><img src="https://i.imgur.com/a9QWW0v.png"></p>
+# Atomic Pomodoro
 
-## Usage
+![](./app-screenshot.png)
 
-### Create an App
+Simple Pomodoro timer built with Electron
 
-```
-# with npx
-$ npx create-nextron-app my-app --example with-tailwindcss
-
-# with yarn
-$ yarn create nextron-app my-app --example with-tailwindcss
-
-# with pnpx
-$ pnpx create-nextron-app my-app --example with-tailwindcss
-```
-
-### Install Dependencies
-
-```
-$ cd my-app
-
-# using yarn or npm
-$ yarn (or `npm install`)
-
-# using pnpm
-$ pnpm install --shamefully-hoist
-```
-
-### Use it
-
-```
-# development mode
-$ yarn dev (or `npm run dev` or `pnpm run dev`)
-
-# production build
-$ yarn build (or `npm run build` or `pnpm run build`)
-```
+<a href='https://github.com/boedegoat/atomic-pomodoro/releases'>Download for Windows</a>
