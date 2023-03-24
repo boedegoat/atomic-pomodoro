@@ -21,7 +21,6 @@ if (isProd) {
             backgroundThrottling: false, // fix setInterval throttled when app minimized
         },
     })
-    global.mainWindow = mainWindow
 
     if (isProd) {
         await mainWindow.loadURL('app://./home.html')
@@ -40,6 +39,11 @@ if (isProd) {
             platform: process.platform,
         }
         ev.sender.send('set-app-info', data)
+    })
+
+    ipcMain.on('set-taskbar-progress', (ev, percent: number) => {
+        console.log(percent)
+        mainWindow.setProgressBar(percent > 0 && percent < 0.1 ? 0.1 : percent)
     })
 })()
 

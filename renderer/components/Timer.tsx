@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { ipcRenderer } from 'electron'
+import { useUpdateEffect } from 'usehooks-ts'
 import store, { getOrSetDefault } from '../lib/store'
 import Settings from './Settings'
+import useAppInfo from '../hooks/useAppInfo'
 
 export type ModeTime = {
     minute: number
@@ -30,9 +32,10 @@ const constructMs = ({ minute, seconds }: ModeTime) => {
     return minute * 60 * 1000 + seconds * 1000
 }
 
-export const INITIAL_TIME = getOrSetDefault('TIME', DEFAULT_TIME) as Time
+const INITIAL_TIME = getOrSetDefault('TIME', DEFAULT_TIME) as Time
 const INITIAL_MODE: Mode = 'focus'
 let interval: NodeJS.Timer
+let totalMs: number
 
 const Timer = () => {
     const [isStarted, setIsStarted] = useState(false)
@@ -41,26 +44,23 @@ const Timer = () => {
     const [ms, setMs] = useState(constructMs(INITIAL_TIME[INITIAL_MODE]))
     const [notif, setNotif] = useState<Notification>(null)
     const [openSettings, setOpenSettings] = useState(false)
-    const [appInfo, setAppInfo] = useState(null)
+    const appInfo = useAppInfo()
 
     const displayTime = new Date(ms).toTimeString().slice(3, 8)
 
-    useEffect(() => {
-        ipcRenderer.send('request-app-info')
-
-        const onSetAppInfo = (ev, data) => {
-            setAppInfo(data)
+    useUpdateEffect(() => {
+        const progressInTaskbar = store.get('PROGRESS_IN_TASKBAR')
+        if (state !== 'running' || !progressInTaskbar) {
+            return
         }
-        ipcRenderer.on('set-app-info', onSetAppInfo)
-
-        return () => {
-            ipcRenderer.off('set-app-info', onSetAppInfo)
-        }
-    }, [])
+        ipcRenderer.send('set-taskbar-progress', (totalMs - ms) / totalMs)
+    }, [ms, state])
 
     const onFinish = () => {
         setIsStarted(false)
         setState(null)
+        totalMs = 0
+        ipcRenderer.send('set-taskbar-progress', -1)
 
         ipcRenderer.send('show-app')
 
@@ -109,6 +109,8 @@ const Timer = () => {
         setIsStarted(true)
         notif?.close()
         setNotif(null)
+        const latestTime = store.get('TIME') as Time
+        totalMs = constructMs(latestTime[mode])
         runTimer()
     }
 
@@ -122,9 +124,11 @@ const Timer = () => {
     }
 
     const onRestart = () => {
+        clearInterval(interval)
         setIsStarted(false)
         setState(null)
-        clearInterval(interval)
+        totalMs = 0
+        ipcRenderer.send('set-taskbar-progress', -1)
         const latestTime = store.get('TIME') as Time
         setMs(constructMs(latestTime[mode]))
     }
@@ -192,20 +196,30 @@ const Timer = () => {
             </div>
             <div
                 style={{
-                    opacity: openSettings ? '1' : '0',
                     pointerEvents: openSettings ? 'auto' : 'none',
                 }}
-                className='fixed inset-0 transition-all flex items-center justify-center'
+                className='fixed inset-0 flex items-center justify-center'
             >
                 <div
+                    style={{
+                        opacity: openSettings ? '1' : '0',
+                    }}
                     onClick={onCloseSettings}
-                    className='fixed w-full h-full bg-gray-900/40 duration-500 backdrop-blur-sm'
+                    className='fixed w-full h-full bg-gray-900/40 backdrop-blur-sm'
                 ></div>
-                <Settings
-                    isStarted={isStarted}
-                    onEdit={onEdit}
-                    onClose={onCloseSettings}
-                />
+                <div
+                    className={`${
+                        openSettings
+                            ? 'scale-100 opacity-100'
+                            : 'scale-95 opacity-0'
+                    } transition-all`}
+                >
+                    <Settings
+                        isStarted={isStarted}
+                        onEdit={onEdit}
+                        onClose={onCloseSettings}
+                    />
+                </div>
             </div>
         </div>
     )

@@ -1,9 +1,12 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import store from '../lib/store'
-import { INITIAL_TIME, Mode, Time } from './Timer'
+import { Mode, Time } from './Timer'
 
 const Settings = ({ onEdit, onClose, isStarted }) => {
-    const [newTime, setNewTime] = useState<Time>(INITIAL_TIME)
+    const [newTime, setNewTime] = useState<Time>(store.get('TIME') as Time)
+    const [newShowProgress, setNewShowProgress] = useState(
+        store.get('PROGRESS_IN_TASKBAR') as boolean
+    )
 
     const onTimeEdit = (
         editedMode: Mode,
@@ -23,6 +26,11 @@ const Settings = ({ onEdit, onClose, isStarted }) => {
         store.set('TIME', newTime)
 
         onEdit({ timeUnit, editedMode, newTime })
+    }
+
+    const onShowProgressEdit = (changedShowProgress: boolean) => {
+        setNewShowProgress(changedShowProgress)
+        store.set('PROGRESS_IN_TASKBAR', changedShowProgress)
     }
 
     return (
@@ -112,6 +120,23 @@ const Settings = ({ onEdit, onClose, isStarted }) => {
                         />
                         <span>Seconds</span>
                     </div>
+                </div>
+                <div className='flex items-center'>
+                    <label htmlFor='edit-show-progress'>
+                        <input
+                            id='edit-show-progress'
+                            disabled={isStarted}
+                            checked={newShowProgress}
+                            onChange={(e) =>
+                                onShowProgressEdit(e.target.checked)
+                            }
+                            type='checkbox'
+                            className='w-4 h-4 mr-2'
+                        />
+                        <span className='font-medium'>
+                            Show progress in taskbar
+                        </span>
+                    </label>
                 </div>
             </div>
         </div>
