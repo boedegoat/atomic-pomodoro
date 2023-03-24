@@ -2,7 +2,7 @@
     "private": true,
     "name": "atomic-pomodoro",
     "description": "Simple pomodoro app",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "author": "Bhremada Fevreano <bhremada.fka@gmail.com>",
     "main": "app/background.js",
     "scripts": {
